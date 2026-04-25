@@ -33,7 +33,16 @@ export async function searchProducts(query: string): Promise<SearchResult> {
   await randomDelay();
 
   const queryLower = query.toLowerCase().trim();
-  const words = queryLower.split(/\s+/);
+
+  if (!queryLower) {
+    return { products: [], query, totalResults: 0 };
+  }
+
+  const words = queryLower.split(/\s+/).filter((w) => w.length >= 2);
+
+  if (words.length === 0) {
+    return { products: [], query, totalResults: 0 };
+  }
 
   const scored = PRODUCTS
     .filter((p) => p.inStock)
@@ -42,17 +51,33 @@ export async function searchProducts(query: string): Promise<SearchResult> {
       const brandLower = product.brand.toLowerCase();
       const catLower = product.category.toLowerCase();
 
+      const nameWords = nameLower.split(/\s+/);
+      const nameWordSet = new Set(nameWords);
+      const brandWordSet = new Set(brandLower.split(/\s+/));
+      const catWordSet = new Set(catLower.split(/\s+/));
+      const lastNameWord = nameWords[nameWords.length - 1];
+
       let score = 0;
 
-      // Full query found in product name → strong match
-      if (nameLower.includes(queryLower)) score += 10;
+      // Full query at start of name → strongest match
+      if (nameLower.startsWith(queryLower)) score += 15;
+      // Full query anywhere in name → strong match
+      else if (nameLower.includes(queryLower)) score += 10;
 
-      // Individual word matches
       for (const word of words) {
-        if (word.length < 2) continue;
-        if (nameLower.includes(word)) score += 5;
-        if (brandLower.includes(word)) score += 3;
-        if (catLower.includes(word)) score += 2;
+        if (nameWordSet.has(word)) {
+          score += 5;
+          // Last word in product name is typically the primary category (e.g. "Milk", "Coke")
+          if (lastNameWord === word) score += 4;
+        } else if (nameLower.includes(word)) {
+          score += 2;
+        }
+
+        if (brandWordSet.has(word)) score += 3;
+        else if (brandLower.includes(word)) score += 1;
+
+        if (catWordSet.has(word)) score += 2;
+        else if (catLower.includes(word)) score += 1;
       }
 
       return { product, score };

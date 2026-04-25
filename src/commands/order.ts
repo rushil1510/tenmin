@@ -18,6 +18,8 @@ import {
   divider,
 } from '../ui/format.js';
 
+const DONE = -1;
+
 export async function orderCommand(query: string): Promise<void> {
   banner();
 
@@ -39,47 +41,58 @@ export async function orderCommand(query: string): Promise<void> {
   printSearchResults(results.products, query);
 
   // ── Interactive selection loop ─────────────
-  let addMore = true;
+  try {
+    while (true) {
+      const choices = [
+        ...results.products.map((product, i) => ({
+          name: `${product.name} (${product.unit})  —  ₹${product.price}  [${product.brand}]`,
+          value: i,
+        })),
+        { name: chalk.dim('← Done, go to cart'), value: DONE },
+      ];
 
-  while (addMore) {
-    // Build choices for select prompt
-    const choices = results.products.map((product, i) => ({
-      name: `${product.name} (${product.unit})  —  ₹${product.price}  [${product.brand}]`,
-      value: i,
-    }));
+      const selectedIndex = await select({
+        message: 'Select an item to add to cart:',
+        choices,
+      });
 
-    const selectedIndex = await select({
-      message: 'Select an item to add to cart:',
-      choices,
-    });
+      if (selectedIndex === DONE) break;
 
-    const selectedProduct = results.products[selectedIndex];
+      const selectedProduct = results.products[selectedIndex];
 
-    // ── Quantity ───────────────────────────────
-    const qty = await numberPrompt({
-      message: `Quantity for ${chalk.bold(selectedProduct.name)}:`,
-      default: 1,
-      min: 1,
-      max: 10,
-    });
+      // ── Quantity ───────────────────────────────
+      const qty = await numberPrompt({
+        message: `Quantity for ${chalk.bold(selectedProduct.name)}:`,
+        default: 1,
+        min: 1,
+        max: 10,
+      });
 
-    const quantity = qty ?? 1;
+      const quantity = qty ?? 1;
 
-    // ── Add to cart ────────────────────────────
-    const lineTotal = selectedProduct.price * quantity;
-    await addToCart(selectedProduct.id, quantity);
+      // ── Add to cart ────────────────────────────
+      const lineTotal = selectedProduct.price * quantity;
+      await addToCart(selectedProduct.id, quantity);
 
-    success(
-      `Added ${chalk.bold(`${quantity}x ${selectedProduct.name}`)} ` +
-      chalk.dim(`(${selectedProduct.unit})`) + ' to cart — ' +
-      chalk.green.bold(`₹${lineTotal}`),
-    );
+      success(
+        `Added ${chalk.bold(`${quantity}x ${selectedProduct.name}`)} ` +
+        chalk.dim(`(${selectedProduct.unit})`) + ' to cart — ' +
+        chalk.green.bold(`₹${lineTotal}`),
+      );
 
-    // ── Ask to add more from same results ─────
-    addMore = await confirm({
-      message: 'Add another item from these results?',
-      default: false,
-    });
+      const addMore = await confirm({
+        message: 'Add another item from these results?',
+        default: false,
+      });
+
+      if (!addMore) break;
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'ExitPromptError') {
+      console.log(chalk.dim('\n  Cancelled.'));
+      return;
+    }
+    throw err;
   }
 
   // ── Cart summary ────────────────────────────

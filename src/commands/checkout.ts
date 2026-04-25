@@ -60,10 +60,19 @@ export async function checkoutCommand(): Promise<void> {
   console.log();
 
   // ── Confirm ─────────────────────────────────
-  const confirmed = await confirm({
-    message: `Place order for ${chalk.bold.green(`₹${total}`)}?`,
-    default: true,
-  });
+  let confirmed: boolean;
+  try {
+    confirmed = await confirm({
+      message: `Place order for ${chalk.bold.green(`₹${total}`)}?`,
+      default: true,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'ExitPromptError') {
+      console.log(chalk.dim('\n  Cancelled. Your cart is still saved.'));
+      return;
+    }
+    throw err;
+  }
 
   if (!confirmed) {
     console.log();
