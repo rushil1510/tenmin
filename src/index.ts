@@ -11,6 +11,7 @@ import { orderCommand } from './commands/order.js';
 import { cartCommand } from './commands/cart.js';
 import { checkoutCommand } from './commands/checkout.js';
 import { creditsCommand } from './commands/credits.js';
+import { themeCommand } from './commands/theme.js';
 
 const program = new Command();
 
@@ -54,6 +55,15 @@ program
   .description('Check your credit balance')
   .action(async () => {
     await creditsCommand();
+  });
+
+// ── tenmin theme [name] ──────────────────────
+program
+  .command('theme')
+  .description('Switch UI theme (default, light, dark, cyberpunk, ocean)')
+  .argument('[name]', 'theme name — or omit to pick interactively')
+  .action(async (name?: string) => {
+    await themeCommand(name);
   });
 
 // ── Parse and run ─────────────────────────────

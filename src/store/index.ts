@@ -8,6 +8,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import type { AppState } from '../types.js';
+import type { ThemeName } from '../ui/themes.js';
 
 const TENMIN_DIR = join(homedir(), '.tenmin');
 const STATE_FILE = join(TENMIN_DIR, 'state.json');
@@ -17,6 +18,7 @@ const DEFAULT_STATE: AppState = {
   credits: 500,
   orders: [],
   address: 'Home — Koramangala, Bangalore 560034',
+  theme: 'default' as ThemeName,
 };
 
 // ── Directory setup ───────────────────────────
@@ -47,6 +49,7 @@ export function getState(): AppState {
       credits: parsed.credits ?? DEFAULT_STATE.credits,
       orders: parsed.orders ?? [],
       address: parsed.address ?? DEFAULT_STATE.address,
+      theme: parsed.theme ?? DEFAULT_STATE.theme,
     };
   } catch {
     // Corrupted state file → reset
@@ -67,4 +70,17 @@ export function saveState(state: AppState): void {
 export function resetState(): void {
   ensureDir();
   writeFileSync(STATE_FILE, JSON.stringify(DEFAULT_STATE, null, 2));
+}
+
+// ── Theme preference ──────────────────────────
+
+export function getThemeName(): ThemeName {
+  const state = getState();
+  return (state.theme ?? 'default') as ThemeName;
+}
+
+export function setThemeName(theme: ThemeName): void {
+  const state = getState();
+  state.theme = theme;
+  saveState(state);
 }
