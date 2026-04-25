@@ -49,6 +49,7 @@ export interface AppState {
   orders: OrderRecord[];
   address: string;
   theme: string;
+  savedLists: SavedList[];
 }
 
 export interface OrderRecord {
@@ -56,4 +57,11 @@ export interface OrderRecord {
   items: { id?: string; name: string; qty: number; price: number }[];
   total: number;
   timestamp: string;
+}
+
+export interface SavedList {
+  name: string;
+  items: { id: string; name: string; qty: number }[];
+  createdAt: string;
+  updatedAt: string;
 }

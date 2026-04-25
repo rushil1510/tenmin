@@ -14,6 +14,8 @@ import { creditsCommand } from './commands/credits.js';
 import { historyCommand } from './commands/history.js';
 import { reorderCommand } from './commands/reorder.js';
 import { trackCommand } from './commands/track.js';
+import { listCommand } from './commands/list.js';
+import { budgetCommand } from './commands/budget.js';
 import { askCommand } from './commands/ask.js';
 import { themeCommand } from './commands/theme.js';
 
@@ -83,6 +85,24 @@ program
   .description('Live track your active order')
   .action(async () => {
     await trackCommand();
+  });
+
+// ── tenmin list [sub] [name] ───────────────────
+program
+  .command('list')
+  .description('Manage saved grocery lists (save, run, delete)')
+  .argument('[action]', 'save | run | delete — or omit to view all lists')
+  .argument('[name]', 'list name')
+  .action(async (action?: string, name?: string) => {
+    await listCommand(action, name);
+  });
+
+// ── tenmin budget ────────────────────────────
+program
+  .command('budget')
+  .description('View spending summary and trends from order history')
+  .action(async () => {
+    await budgetCommand();
   });
 
 // ── tenmin ask <query> ────────────────────────

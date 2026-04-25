@@ -32,6 +32,8 @@ Developers lose ~23 minutes of focus after each context switch ([UC Irvine resea
 | **AI-Powered Ordering** | `tenmin ask "<request>"` | Natural language → Gemini parses intent → auto-searches & adds to cart |
 | **Reorder** | `tenmin reorder` | Pick a past order from your history and instantly re-add available items to cart |
 | **Live Tracking** | `tenmin track` | Live order status polling with a visual progress bar and ETA |
+| **Saved Lists** | `tenmin list` | Save named carts and run them on demand — one command weekly grocery run |
+| **Budget** | `tenmin budget` | Spending summary with bar charts — today, weekly, monthly, all-time, top items |
 | **Cart Management** | `tenmin cart` | View cart with pricing, delivery fee, totals |
 | **Clear Cart** | `tenmin cart clear` | Empty your cart with confirmation |
 | **Checkout** | `tenmin checkout` | Review order, confirm, pay with credits |
@@ -284,35 +286,7 @@ src/
 
 ### 📋 Tier 2 — Power User Features
 
-#### `tenmin list`
-Saved grocery lists — create named carts and execute them on demand.
-
-```bash
-# Save current cart as a named list
-tenmin list save weekly-groceries
-
-# Run a saved list (adds all items to cart)
-tenmin list run weekly-groceries
-
-# View all saved lists
-tenmin list
-```
-
-For people who order the same stuff repeatedly — this becomes their primary workflow.
-
-#### `tenmin budget`
-Monthly/weekly spend tracking from order history.
-
-```bash
-tenmin budget
-# 📊 Spending Summary
-# ──────────────────────────────────────────────
-# This week     ₹450  (3 orders)
-# This month    ₹1,820  (12 orders)
-# Top category  Beverages (₹620)
-```
-
-Already have all the data, just needs grouping by week/month and a nice table.
+*(All Tier 2 features are now implemented!)*
 
 ---
 

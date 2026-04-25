@@ -7,7 +7,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import type { AppState } from '../types.js';
+import type { AppState, SavedList } from '../types.js';
 import type { ThemeName } from '../ui/themes.js';
 
 const TENMIN_DIR = join(homedir(), '.tenmin');
@@ -19,6 +19,7 @@ const DEFAULT_STATE: AppState = {
   orders: [],
   address: 'Home — Koramangala, Bangalore 560034',
   theme: 'default' as ThemeName,
+  savedLists: [],
 };
 
 // ── Directory setup ───────────────────────────
@@ -50,6 +51,7 @@ export function getState(): AppState {
       orders: parsed.orders ?? [],
       address: parsed.address ?? DEFAULT_STATE.address,
       theme: parsed.theme ?? DEFAULT_STATE.theme,
+      savedLists: parsed.savedLists ?? [],
     };
   } catch {
     // Corrupted state file → reset
@@ -83,4 +85,33 @@ export function setThemeName(theme: ThemeName): void {
   const state = getState();
   state.theme = theme;
   saveState(state);
+}
+
+// ── Saved lists helpers ────────────────────────
+
+export function getSavedLists(): SavedList[] {
+  return getState().savedLists ?? [];
+}
+
+export function getSavedList(name: string): SavedList | undefined {
+  return getSavedLists().find((l) => l.name === name);
+}
+
+export function saveList(list: SavedList): void {
+  const state = getState();
+  const idx = state.savedLists.findIndex((l) => l.name === list.name);
+  if (idx !== -1) {
+    state.savedLists[idx] = list;
+  } else {
+    state.savedLists.push(list);
+  }
+  saveState(state);
+}
+
+export function deleteList(name: string): boolean {
+  const state = getState();
+  const before = state.savedLists.length;
+  state.savedLists = state.savedLists.filter((l) => l.name !== name);
+  saveState(state);
+  return state.savedLists.length < before;
 }
