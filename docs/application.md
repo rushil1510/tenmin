@@ -35,18 +35,18 @@ Developers lose an average of **23 minutes** to regain deep focus after a contex
 ## 2. Product Features (MVP Scope)
 
 ### Core Features
-1. **`tenmin order`** — Start a conversational food ordering flow right in the terminal
-2. **`tenmin quick`** — Reorder your last order or a saved favorite with one command
-3. **`tenmin instamart`** — Quick grocery ordering (milk, eggs, essentials)
-4. **`tenmin track`** — Check delivery status without leaving the terminal
-5. **`tenmin history`** — View past orders and reorder from history
-6. **`tenmin preferences`** — Set dietary preferences, budget limits, default address
+- [x] 1. **`tenmin order`** — Start a conversational food ordering flow right in the terminal
+- [x] 2. **`tenmin reorder`** — Reorder your last order or a saved favorite with one command (was `tenmin quick`)
+- [x] 3. **`tenmin list`** — Quick grocery ordering from saved lists (milk, eggs, essentials)
+- [x] 4. **`tenmin track`** — Check delivery status without leaving the terminal
+- [x] 5. **`tenmin history`** — View past orders and reorder from history
+- [x] 6. **`tenmin theme` / `budget`** — Set UI themes and view spending trends (replaces `tenmin preferences`)
 
 ### AI-Powered Features
-- **Natural language ordering**: `tenmin order "something spicy under 300 for lunch"` → AI agent searches restaurants, filters by preferences, picks the best option, confirms with you, places order
-- **Smart suggestions**: Based on time of day, past orders, and weather
-- **Dietary filtering**: Respects your calorie/macro preferences automatically
-- **Budget awareness**: Never exceeds your set budget without asking
+- [x] **Natural language ordering**: `tenmin ask "something spicy under 300 for lunch"` → AI agent searches restaurants, filters by preferences, picks the best option, confirms with you, places order
+- [ ] **Smart suggestions**: Based on time of day, past orders, and weather
+- [ ] **Dietary filtering**: Respects your calorie/macro preferences automatically
+- [x] **Budget awareness**: View your spending summary and trends via `tenmin budget`
 
 ### IDE Plugin (Phase 2)
 - **Claude Code MCP integration**: Tenmin as an MCP tool server that Claude Code can call
