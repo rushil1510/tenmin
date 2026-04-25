@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────
 
 import chalk from 'chalk';
-import type { Product, CartItem, OrderResult } from '../types.js';
+import type { Product, CartItem, OrderResult, OrderRecord } from '../types.js';
 
 // ── Branding ──────────────────────────────────
 
@@ -174,6 +174,73 @@ export function printNoResults(query: string): void {
   hint('Try a different search term.');
   console.log();
 }
+
+// ── Order history display ─────────────────────
+
+function formatOrderDate(date: Date): string {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday.getTime() - 86_400_000);
+  const startOfOrder = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const time = date.toLocaleTimeString('en-IN', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  if (startOfOrder.getTime() === startOfToday.getTime()) return `Today, ${time}`;
+  if (startOfOrder.getTime() === startOfYesterday.getTime()) return `Yesterday, ${time}`;
+
+  const day = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return `${day}, ${time}`;
+}
+
+export function printOrderHistory(orders: OrderRecord[]): void {
+  console.log(chalk.bold.white('  📦 Order History'));
+  divider();
+
+  if (orders.length === 0) {
+    console.log(chalk.dim('  No orders yet.'));
+    divider();
+    hint('Run `tenmin order <item>` to place your first order.');
+    console.log();
+    return;
+  }
+
+  const sorted = [...orders].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
+
+  for (const order of sorted.slice(0, 10)) {
+    const dateStr = formatOrderDate(new Date(order.timestamp));
+
+    console.log(
+      `  ${chalk.bold.cyan(`#${order.orderId}`)}` +
+      chalk.dim(`   ${dateStr}   `) +
+      chalk.green.bold(`₹${order.total}`),
+    );
+
+    for (const item of order.items) {
+      console.log(chalk.dim(`    ${item.name}  ×${item.qty}`));
+    }
+
+    console.log();
+  }
+
+  divider();
+
+  const totalSpent = orders.reduce((sum, o) => sum + o.total, 0);
+  info(
+    `${chalk.bold(String(orders.length))} order${orders.length === 1 ? '' : 's'}` +
+    chalk.dim('  ·  ') +
+    chalk.green.bold(`₹${totalSpent}`) + chalk.dim(' total'),
+  );
+  divider();
+  console.log();
+}
+
+// ── Empty state messages ──────────────────────
 
 export function printEmptyCart(): void {
   console.log();
