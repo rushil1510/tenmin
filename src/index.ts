@@ -13,6 +13,7 @@ import { checkoutCommand } from './commands/checkout.js';
 import { creditsCommand } from './commands/credits.js';
 import { historyCommand } from './commands/history.js';
 import { askCommand } from './commands/ask.js';
+import { themeCommand } from './commands/theme.js';
 
 const program = new Command();
 
@@ -73,6 +74,15 @@ program
   .argument('<query...>', 'what you want, in plain English (e.g. "ingredients for biryani")')
   .action(async (queryParts: string[]) => {
     await askCommand(queryParts.join(' '));
+  });
+
+// ── tenmin theme [name] ──────────────────────
+program
+  .command('theme')
+  .description('Switch UI theme (default, light, dark, cyberpunk, ocean)')
+  .argument('[name]', 'theme name — or omit to pick interactively')
+  .action(async (name?: string) => {
+    await themeCommand(name);
   });
 
 // ── Parse and run ─────────────────────────────
