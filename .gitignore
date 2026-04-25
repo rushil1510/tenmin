@@ -1,0 +1,22 @@
+node_modules/
+dist/
+*.js.map
+*.d.ts
+!src/**/*.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Tenmin local state
+.tenmin/
