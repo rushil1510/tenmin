@@ -6,13 +6,14 @@
 import ora from 'ora';
 import chalk from 'chalk';
 import { confirm } from '@inquirer/prompts';
-import { getCart, getCredits, checkout } from '../mock/swiggy-api.js';
+import { getCart, getCredits, checkout, clearCart } from '../mock/swiggy-api.js';
 import {
   banner,
   printCart,
   printEmptyCart,
   printOrderConfirmation,
   error,
+  hint,
   divider,
 } from '../ui/format.js';
 
@@ -53,6 +54,29 @@ export async function checkoutCommand(): Promise<void> {
       `Insufficient credits. Need ${chalk.bold(`₹${total}`)} but only ` +
       chalk.bold(`₹${balance}`) + ' available.',
     );
+    console.log();
+
+    let clearConfirmed: boolean;
+    try {
+      clearConfirmed = await confirm({
+        message: 'Clear cart and start over?',
+        default: false,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'ExitPromptError') {
+        console.log(chalk.dim('\n  Cart unchanged.'));
+        return;
+      }
+      throw err;
+    }
+
+    if (clearConfirmed) {
+      await clearCart();
+      console.log();
+      hint('Cart cleared. Run `tenmin order <item>` to add something new.');
+    } else {
+      hint('Run `tenmin cart clear` to manually clear your cart.');
+    }
     console.log();
     return;
   }
