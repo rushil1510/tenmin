@@ -48,6 +48,7 @@ export interface AppState {
   credits: number;
   orders: OrderRecord[];
   address: string;
+  theme: string;
 }
 
 export interface OrderRecord {

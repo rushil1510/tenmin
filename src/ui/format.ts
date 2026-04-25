@@ -5,14 +5,23 @@
 
 import chalk from 'chalk';
 import type { Product, CartItem, OrderResult } from '../types.js';
+import { getTheme, type Theme } from './themes.js';
+import { getThemeName } from '../store/index.js';
+
+// ── Active theme accessor ─────────────────────
+
+function t(): Theme {
+  return getTheme(getThemeName());
+}
 
 // ── Branding ──────────────────────────────────
 
 export function banner(): void {
+  const theme = t();
   console.log();
   console.log(
-    chalk.bold.hex('#FF5722')('  ⚡ tenmin') +
-    chalk.dim(' — order from Swiggy, stay in flow'),
+    chalk.bold.hex(theme.colors.brand)(`  ${theme.icons.bolt} tenmin`) +
+    chalk.hex(theme.colors.brandText)(' — order from Swiggy, stay in flow'),
   );
   console.log();
 }
@@ -20,51 +29,61 @@ export function banner(): void {
 // ── Status messages ───────────────────────────
 
 export function success(msg: string): void {
-  console.log(chalk.green('  ✔ ') + msg);
+  const theme = t();
+  console.log(chalk.hex(theme.colors.success)(`  ${theme.icons.success} `) + msg);
 }
 
 export function error(msg: string): void {
-  console.log(chalk.red('  ✖ ') + msg);
+  const theme = t();
+  console.log(chalk.hex(theme.colors.error)(`  ${theme.icons.error} `) + msg);
 }
 
 export function info(msg: string): void {
-  console.log(chalk.blue('  ℹ ') + msg);
+  const theme = t();
+  console.log(chalk.hex(theme.colors.info)(`  ${theme.icons.info} `) + msg);
 }
 
 export function hint(msg: string): void {
-  console.log(chalk.dim('  💡 ' + msg));
+  const theme = t();
+  console.log(chalk.hex(theme.colors.hint)(`  ${theme.icons.hint} ` + msg));
 }
 
 export function warn(msg: string): void {
-  console.log(chalk.yellow('  ⚠ ') + msg);
+  const theme = t();
+  console.log(chalk.hex(theme.colors.warn)(`  ${theme.icons.warn} `) + msg);
 }
 
 // ── Divider ───────────────────────────────────
 
 export function divider(): void {
-  console.log(chalk.dim('  ' + '─'.repeat(46)));
+  const theme = t();
+  console.log(chalk.hex(theme.colors.divider)('  ' + '─'.repeat(46)));
 }
 
 // ── Product display ───────────────────────────
 
 export function formatProductChoice(product: Product, index: number): string {
-  const num = chalk.bold.cyan(`${index + 1}.`);
-  const name = chalk.white.bold(product.name);
-  const unit = chalk.dim(`(${product.unit})`);
-  const brand = chalk.dim(`— ${product.brand}`);
+  const theme = t();
 
-  const price = chalk.green.bold(`₹${product.price}`);
+  const num = chalk.bold.hex(theme.colors.accent)(`${index + 1}.`);
+  const name = chalk.hex(theme.colors.primary).bold(product.name);
+  const unit = chalk.hex(theme.colors.secondary)(`(${product.unit})`);
+  const brand = chalk.hex(theme.colors.secondary)(`— ${product.brand}`);
+
+  const price = chalk.hex(theme.colors.price).bold(`₹${product.price}`);
   const mrpDiff = product.mrp > product.price
-    ? chalk.dim.strikethrough(` ₹${product.mrp}`)
+    ? chalk.hex(theme.colors.priceStrike).strikethrough(` ₹${product.mrp}`)
     : '';
 
   return `  ${num} ${name} ${unit}  ${price}${mrpDiff}  ${brand}`;
 }
 
 export function printSearchResults(products: Product[], query: string): void {
+  const theme = t();
+
   console.log();
   console.log(
-    chalk.white(`  Found ${chalk.bold.cyan(String(products.length))} results for `) +
+    chalk.hex(theme.colors.primary)(`  Found ${chalk.bold.hex(theme.colors.accent)(String(products.length))} results for `) +
     chalk.bold(`"${query}"`),
   );
   console.log();
@@ -79,12 +98,14 @@ export function printSearchResults(products: Product[], query: string): void {
 // ── Cart display ──────────────────────────────
 
 export function printCart(items: CartItem[]): void {
+  const theme = t();
+
   console.log();
-  console.log(chalk.bold.white('  🛒 Your Cart'));
+  console.log(chalk.bold.hex(theme.colors.primary)(`  ${theme.icons.cart} Your Cart`));
   divider();
 
   if (items.length === 0) {
-    console.log(chalk.dim('  Cart is empty'));
+    console.log(chalk.hex(theme.colors.muted)('  Cart is empty'));
     divider();
     hint('Run `tenmin order <item>` to add something.');
     console.log();
@@ -94,11 +115,11 @@ export function printCart(items: CartItem[]): void {
   let subtotal = 0;
 
   for (const item of items) {
-    const name = chalk.white(item.product.name);
-    const unit = chalk.dim(`(${item.product.unit})`);
-    const qty = chalk.cyan(`${item.qty}x`);
+    const name = chalk.hex(theme.colors.primary)(item.product.name);
+    const unit = chalk.hex(theme.colors.secondary)(`(${item.product.unit})`);
+    const qty = chalk.hex(theme.colors.accent)(`${item.qty}x`);
     const lineTotal = item.product.price * item.qty;
-    const price = chalk.green(`₹${lineTotal}`);
+    const price = chalk.hex(theme.colors.price)(`₹${lineTotal}`);
     subtotal += lineTotal;
 
     // Right-align the price
@@ -114,18 +135,18 @@ export function printCart(items: CartItem[]): void {
   const deliveryFee = subtotal >= 199 ? 0 : 25;
   const total = subtotal + deliveryFee;
 
-  const subtotalLabel = chalk.dim('  Subtotal');
-  console.log(`${subtotalLabel}${' '.repeat(Math.max(2, 38 - 10))}${chalk.white(`₹${subtotal}`)}`);
+  const subtotalLabel = chalk.hex(theme.colors.secondary)('  Subtotal');
+  console.log(`${subtotalLabel}${' '.repeat(Math.max(2, 38 - 10))}${chalk.hex(theme.colors.primary)(`₹${subtotal}`)}`);
 
   if (deliveryFee === 0) {
-    console.log(`${chalk.dim('  Delivery')}${' '.repeat(Math.max(2, 38 - 10))}${chalk.green('FREE')}`);
+    console.log(`${chalk.hex(theme.colors.secondary)('  Delivery')}${' '.repeat(Math.max(2, 38 - 10))}${chalk.hex(theme.colors.success)('FREE')}`);
   } else {
-    console.log(`${chalk.dim('  Delivery')}${' '.repeat(Math.max(2, 38 - 10))}${chalk.white(`₹${deliveryFee}`)}`);
+    console.log(`${chalk.hex(theme.colors.secondary)('  Delivery')}${' '.repeat(Math.max(2, 38 - 10))}${chalk.hex(theme.colors.primary)(`₹${deliveryFee}`)}`);
     info(`Add ₹${199 - subtotal} more for free delivery`);
   }
 
   divider();
-  console.log(`${chalk.bold.white('  Total')}${' '.repeat(Math.max(2, 38 - 7))}${chalk.bold.green(`₹${total}`)}`);
+  console.log(`${chalk.bold.hex(theme.colors.primary)('  Total')}${' '.repeat(Math.max(2, 38 - 7))}${chalk.bold.hex(theme.colors.price)(`₹${total}`)}`);
   divider();
   console.log();
 }
@@ -133,10 +154,12 @@ export function printCart(items: CartItem[]): void {
 // ── Credits display ───────────────────────────
 
 export function printCredits(balance: number): void {
+  const theme = t();
+
   console.log();
   console.log(
-    chalk.bold.white('  💳 Credits Balance: ') +
-    chalk.bold.green(`₹${balance}`),
+    chalk.bold.hex(theme.colors.primary)(`  ${theme.icons.credits} Credits Balance: `) +
+    chalk.bold.hex(theme.colors.price)(`₹${balance}`),
   );
   console.log();
 }
@@ -144,22 +167,24 @@ export function printCredits(balance: number): void {
 // ── Order confirmation ────────────────────────
 
 export function printOrderConfirmation(order: OrderResult): void {
+  const theme = t();
+
   console.log();
-  console.log(chalk.bold.green('  🎉 Order placed successfully!'));
+  console.log(chalk.bold.hex(theme.colors.success)(`  ${theme.icons.done} Order placed successfully!`));
   divider();
-  console.log(`  ${chalk.dim('Order ID')}        ${chalk.bold.white(`#${order.orderId}`)}`);
-  console.log(`  ${chalk.dim('Items')}           ${chalk.white(String(order.items.length))}`);
-  console.log(`  ${chalk.dim('Subtotal')}        ${chalk.white(`₹${order.subtotal}`)}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('Order ID')}        ${chalk.bold.hex(theme.colors.primary)(`#${order.orderId}`)}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('Items')}           ${chalk.hex(theme.colors.primary)(String(order.items.length))}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('Subtotal')}        ${chalk.hex(theme.colors.primary)(`₹${order.subtotal}`)}`);
 
   if (order.deliveryFee === 0) {
-    console.log(`  ${chalk.dim('Delivery')}        ${chalk.green('FREE')}`);
+    console.log(`  ${chalk.hex(theme.colors.secondary)('Delivery')}        ${chalk.hex(theme.colors.success)('FREE')}`);
   } else {
-    console.log(`  ${chalk.dim('Delivery')}        ${chalk.white(`₹${order.deliveryFee}`)}`);
+    console.log(`  ${chalk.hex(theme.colors.secondary)('Delivery')}        ${chalk.hex(theme.colors.primary)(`₹${order.deliveryFee}`)}`);
   }
 
-  console.log(`  ${chalk.dim('Total Paid')}      ${chalk.bold.green(`₹${order.total}`)}`);
-  console.log(`  ${chalk.dim('ETA')}             ${chalk.cyan(order.estimatedDelivery)}`);
-  console.log(`  ${chalk.dim('Credits Left')}    ${chalk.white(`₹${order.creditsRemaining}`)}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('Total Paid')}      ${chalk.bold.hex(theme.colors.price)(`₹${order.total}`)}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('ETA')}             ${chalk.hex(theme.colors.accent)(order.estimatedDelivery)}`);
+  console.log(`  ${chalk.hex(theme.colors.secondary)('Credits Left')}    ${chalk.hex(theme.colors.primary)(`₹${order.creditsRemaining}`)}`);
   divider();
   console.log();
   hint('Run `tenmin order <item>` to order more.');
