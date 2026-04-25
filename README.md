@@ -30,6 +30,8 @@ Developers lose ~23 minutes of focus after each context switch ([UC Irvine resea
 |---|---|---|
 | **Search & Order** | `tenmin order <query>` | Search Instamart products, select interactively, add to cart |
 | **AI-Powered Ordering** | `tenmin ask "<request>"` | Natural language → Gemini parses intent → auto-searches & adds to cart |
+| **Reorder** | `tenmin reorder` | Pick a past order from your history and instantly re-add available items to cart |
+| **Live Tracking** | `tenmin track` | Live order status polling with a visual progress bar and ETA |
 | **Cart Management** | `tenmin cart` | View cart with pricing, delivery fee, totals |
 | **Clear Cart** | `tenmin cart clear` | Empty your cart with confirmation |
 | **Checkout** | `tenmin checkout` | Review order, confirm, pay with credits |
@@ -276,31 +278,7 @@ src/
 
 ### 🔜 Tier 1 — High Impact (Directly Showcases MCP)
 
-These are the next features to build. They directly demonstrate why MCP integration matters.
-
-#### `tenmin reorder`
-Re-order from your history in one shot. Weekly grocery run becomes one command.
-
-```bash
-# Pick from your past orders, re-add everything to cart
-tenmin reorder
-```
-
-Already have the order history data — this is ~30 lines of implementation.
-
-#### `tenmin track`
-Live order status in the terminal. Poll the MCP order-status endpoint, show ETA + status updates with a spinner.
-
-```bash
-tenmin track
-# ◌ Order #TM-2026-4821
-# ├─ Packed ✓
-# ├─ Rider assigned ✓
-# ├─ Out for delivery...  🛵
-# └─ ETA: 7 minutes
-```
-
-The thing developers actually want after placing an order — check status without touching their phone.
+*(All Tier 1 features are now implemented!)*
 
 ---
 

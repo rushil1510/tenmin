@@ -13,6 +13,7 @@ import { checkoutCommand } from './commands/checkout.js';
 import { creditsCommand } from './commands/credits.js';
 import { historyCommand } from './commands/history.js';
 import { reorderCommand } from './commands/reorder.js';
+import { trackCommand } from './commands/track.js';
 import { askCommand } from './commands/ask.js';
 import { themeCommand } from './commands/theme.js';
 
@@ -74,6 +75,14 @@ program
   .description('Reorder items from a past order')
   .action(async () => {
     await reorderCommand();
+  });
+
+// ── tenmin track ──────────────────────────────
+program
+  .command('track')
+  .description('Live track your active order')
+  .action(async () => {
+    await trackCommand();
   });
 
 // ── tenmin ask <query> ────────────────────────

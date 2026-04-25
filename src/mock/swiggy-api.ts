@@ -216,3 +216,63 @@ export async function getCredits(): Promise<{ balance: number }> {
   const state = getState();
   return { balance: state.credits };
 }
+
+// ── Track Order ───────────────────────────────
+
+export interface OrderTracking {
+  orderId: string;
+  status: 'PREPARING' | 'PACKED' | 'ON_THE_WAY' | 'DELIVERED';
+  statusText: string;
+  eta: string;
+  progress: number; // 0 to 1
+}
+
+export async function getOrderStatus(orderId: string): Promise<OrderTracking> {
+  await delay(400);
+
+  const state = getState();
+  const order = state.orders.find((o) => o.orderId === orderId);
+
+  if (!order) {
+    throw new Error(`Order ${orderId} not found.`);
+  }
+
+  const orderTime = new Date(order.timestamp).getTime();
+  const now = Date.now();
+  const elapsedMinutes = (now - orderTime) / 60000;
+
+  // Simulate progress based on time since order
+  if (elapsedMinutes > 10) {
+    return {
+      orderId,
+      status: 'DELIVERED',
+      statusText: 'Delivered',
+      eta: 'Arrived',
+      progress: 1,
+    };
+  } else if (elapsedMinutes > 5) {
+    return {
+      orderId,
+      status: 'ON_THE_WAY',
+      statusText: 'Rider is on the way',
+      eta: `${Math.ceil(10 - elapsedMinutes)} mins`,
+      progress: 0.75,
+    };
+  } else if (elapsedMinutes > 2) {
+    return {
+      orderId,
+      status: 'PACKED',
+      statusText: 'Order packed and waiting for rider',
+      eta: `${Math.ceil(10 - elapsedMinutes)} mins`,
+      progress: 0.5,
+    };
+  } else {
+    return {
+      orderId,
+      status: 'PREPARING',
+      statusText: 'Packing your items',
+      eta: `${Math.ceil(10 - elapsedMinutes)} mins`,
+      progress: 0.25,
+    };
+  }
+}
