@@ -12,6 +12,7 @@ import { cartCommand } from './commands/cart.js';
 import { checkoutCommand } from './commands/checkout.js';
 import { creditsCommand } from './commands/credits.js';
 import { historyCommand } from './commands/history.js';
+import { askCommand } from './commands/ask.js';
 
 const program = new Command();
 
@@ -63,6 +64,15 @@ program
   .description('View your past orders')
   .action(async () => {
     await historyCommand();
+  });
+
+// ── tenmin ask <query> ────────────────────────
+program
+  .command('ask')
+  .description('Natural language grocery request — powered by Gemini')
+  .argument('<query...>', 'what you want, in plain English (e.g. "ingredients for biryani")')
+  .action(async (queryParts: string[]) => {
+    await askCommand(queryParts.join(' '));
   });
 
 // ── Parse and run ─────────────────────────────
