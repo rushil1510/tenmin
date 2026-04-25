@@ -12,6 +12,7 @@ import { cartCommand } from './commands/cart.js';
 import { checkoutCommand } from './commands/checkout.js';
 import { creditsCommand } from './commands/credits.js';
 import { historyCommand } from './commands/history.js';
+import { reorderCommand } from './commands/reorder.js';
 import { askCommand } from './commands/ask.js';
 import { themeCommand } from './commands/theme.js';
 
@@ -65,6 +66,14 @@ program
   .description('View your past orders')
   .action(async () => {
     await historyCommand();
+  });
+
+// ── tenmin reorder ────────────────────────────
+program
+  .command('reorder')
+  .description('Reorder items from a past order')
+  .action(async () => {
+    await reorderCommand();
   });
 
 // ── tenmin ask <query> ────────────────────────

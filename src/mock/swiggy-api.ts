@@ -183,6 +183,7 @@ export async function checkout(): Promise<OrderResult> {
   state.orders.push({
     orderId,
     items: state.cart.map((item) => ({
+      id: item.product.id,
       name: item.product.name,
       qty: item.qty,
       price: item.product.price,
