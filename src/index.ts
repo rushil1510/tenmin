@@ -18,6 +18,7 @@ import { listCommand } from './commands/list.js';
 import { budgetCommand } from './commands/budget.js';
 import { askCommand } from './commands/ask.js';
 import { themeCommand } from './commands/theme.js';
+import { prefsCommand } from './commands/prefs.js';
 
 const program = new Command();
 
@@ -121,6 +122,14 @@ program
   .argument('[name]', 'theme name — or omit to pick interactively')
   .action(async (name?: string) => {
     await themeCommand(name);
+  });
+
+// ── tenmin prefs ─────────────────────────────
+program
+  .command('prefs')
+  .description('View and edit preferences used by `ask`')
+  .action(async () => {
+    await prefsCommand();
   });
 
 // ── Parse and run ─────────────────────────────

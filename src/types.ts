@@ -65,3 +65,9 @@ export interface SavedList {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UserPreferences {
+  dietary: string[];   // e.g. ["vegetarian", "no dairy"]
+  avoid: string[];     // e.g. ["energy drinks", "spicy"]
+  defaultBudget: number;
+}
