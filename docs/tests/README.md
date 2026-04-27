@@ -31,6 +31,7 @@ The current unit tests focus on:
 - saved list CRUD behavior
 - mock Swiggy API cart and checkout flows
 - mock order tracking state transitions
+- track command dismissal behavior
 - pure budget calculations
 
 They do not currently cover CLI rendering in detail, interactive prompts, or full end-to-end command flows.
@@ -170,6 +171,18 @@ The helper `seedOrder(minutesAgo)` injects an order directly into saved state wi
   Confirms the four status buckets produce strictly increasing progress values. This protects the visual progress model from going backward.
 
 If this suite fails, it usually means the time thresholds or progress mapping changed.
+
+### `src/commands/track.test.ts`
+
+This suite verifies the UX behavior of `tenmin track` itself rather than the mock delivery-state math.
+
+- `stops live tracking when the user presses "q"`
+  Confirms the command stops the spinner, removes its input listener, restores terminal raw mode, and prints the dismissal hint when the user presses `q`.
+
+- `stops live tracking when the user presses Enter`
+  Confirms the same quick-exit behavior works for Enter, which is the more discoverable key for users who just want their prompt back.
+
+If this suite fails, it usually means the track command no longer exits cleanly after user input or it is leaving terminal state behind.
 
 ### `src/commands/budget.test.ts`
 

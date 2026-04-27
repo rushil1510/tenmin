@@ -31,7 +31,7 @@ Developers lose ~23 minutes of focus after each context switch ([UC Irvine resea
 | **Search & Order** | `tenmin order <query>` | Search Instamart products, select interactively, add to cart |
 | **AI-Powered Ordering** | `tenmin ask "<request>"` | Natural language → Gemini parses intent → auto-searches & adds to cart |
 | **Reorder** | `tenmin reorder` | Pick a past order from your history and instantly re-add available items to cart |
-| **Live Tracking** | `tenmin track` | Live order status polling with a visual progress bar and ETA |
+| **Live Tracking** | `tenmin track` | Live order status polling with a visual progress bar, ETA, and quick dismiss via `q` or Enter |
 | **Saved Lists** | `tenmin list` | Save named carts and run them on demand — one command weekly grocery run |
 | **Budget** | `tenmin budget` | Spending summary with bar charts — today, weekly, monthly, all-time, top items |
 | **Cart Management** | `tenmin cart` | View cart with pricing, delivery fee, totals |
@@ -156,6 +156,14 @@ Shows your past 10 orders sorted by date, with:
 - Order ID, date (with "Today" / "Yesterday" smart formatting)
 - Item breakdown
 - Total spend summary across all orders
+
+### Live Tracking
+
+```bash
+tenmin track
+```
+
+Tracks your latest active order with a progress bar and ETA. If you only wanted a quick glance, press `q` or Enter to dismiss the live tracking screen and get your terminal prompt back immediately.
 
 ### Credits
 
@@ -363,6 +371,9 @@ npm run dev -- history
 # Type check
 npm run lint
 
+# Run unit tests
+npm test
+
 # Build for production
 npm run build
 
@@ -382,6 +393,10 @@ All data is stored in `~/.tenmin/`:
 ```
 
 To reset everything: delete `~/.tenmin/` and start fresh.
+
+### Test Documentation
+
+The unit test guide lives at [docs/tests/README.md](/Users/rushilmital/Documents/VibeCoding/Swiggy/tenmin/docs/tests/README.md). It walks through each current suite, what behavior it protects, and the shared test patterns used across the repo.
 
 ---
 

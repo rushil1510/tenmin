@@ -5,6 +5,7 @@
 
 import ora from 'ora';
 import chalk from 'chalk';
+import readline from 'node:readline';
 import { getState } from '../store/index.js';
 import { getOrderStatus, type OrderTracking } from '../mock/swiggy-api.js';
 import { banner, warn, error, hint, divider } from '../ui/format.js';
@@ -13,6 +14,53 @@ import { getThemeName } from '../store/index.js';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type DismissListener = {
+  isDismissed(): boolean;
+  cleanup(): void;
+};
+
+function createDismissListener(): DismissListener {
+  let dismissed = false;
+
+  const onData = (chunk: string | Buffer): void => {
+    const input = chunk.toString();
+
+    if (input === 'q' || input === 'Q' || input === '\r' || input === '\n') {
+      dismissed = true;
+    }
+  };
+
+  const stdin = process.stdin;
+
+  if (!stdin.isTTY) {
+    return {
+      isDismissed: () => dismissed,
+      cleanup: () => {},
+    };
+  }
+
+  readline.emitKeypressEvents(stdin);
+  const shouldRestoreRawMode = !stdin.isRaw;
+
+  if (shouldRestoreRawMode && typeof stdin.setRawMode === 'function') {
+    stdin.setRawMode(true);
+  }
+
+  stdin.resume();
+  stdin.on('data', onData);
+
+  return {
+    isDismissed: () => dismissed,
+    cleanup: () => {
+      stdin.off('data', onData);
+
+      if (shouldRestoreRawMode && typeof stdin.setRawMode === 'function') {
+        stdin.setRawMode(false);
+      }
+    },
+  };
 }
 
 export async function trackCommand(): Promise<void> {
@@ -37,6 +85,8 @@ export async function trackCommand(): Promise<void> {
 
   console.log(chalk.bold.white(`  Tracking Order #${latestOrder.orderId}`));
   console.log();
+  hint('Press `q` or Enter to stop live tracking.');
+  console.log();
 
   if (elapsedMinutes > 30) {
     warn('This order was placed a while ago and has already been delivered.');
@@ -53,6 +103,7 @@ export async function trackCommand(): Promise<void> {
   }).start();
 
   let lastStatus = '';
+  const dismissListener = createDismissListener();
 
   try {
     // Poll until delivered
@@ -90,11 +141,26 @@ export async function trackCommand(): Promise<void> {
         }
       }
 
-      await delay(3000); // Poll every 3 seconds
+      if (dismissListener.isDismissed()) {
+        spinner.stop();
+        hint('Stopped live tracking. Run `tenmin track` again anytime.');
+        break;
+      }
+
+      // Keep the 3-second poll cadence, but let the user dismiss immediately.
+      for (let i = 0; i < 30; i++) {
+        await delay(100);
+
+        if (dismissListener.isDismissed()) {
+          break;
+        }
+      }
     }
   } catch (err) {
     spinner.stop();
     error(err instanceof Error ? err.message : 'Failed to fetch tracking data.');
+  } finally {
+    dismissListener.cleanup();
   }
 
   console.log();
