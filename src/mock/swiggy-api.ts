@@ -5,8 +5,9 @@
 // real MCP client calls once API access is granted.
 // ─────────────────────────────────────────────
 
-import type { SearchResult, CartItem, OrderResult } from '../types.js';
+import type { SearchResult, CartItem, OrderResult, Restaurant, MenuItem, Coupon, FoodCart } from '../types.js';
 import { PRODUCTS, STORE } from './products.js';
+import { RESTAURANTS, COUPONS } from './restaurants.js';
 import { getState, saveState } from '../store/index.js';
 
 // ── Helpers ───────────────────────────────────
@@ -275,4 +276,69 @@ export async function getOrderStatus(orderId: string): Promise<OrderTracking> {
       progress: 0.25,
     };
   }
+}
+
+// ── Instamart: Your Go-To Items ────────────────
+
+export async function yourGoToItems(): Promise<SearchResult> {
+  await randomDelay();
+  // Mock: Return Red Bull, Milk, and Bread
+  const goTos = PRODUCTS.filter((p) => 
+    ['bev_009', 'dry_001', 'ess_001', 'snk_001'].includes(p.id)
+  );
+  return {
+    products: goTos,
+    query: '',
+    totalResults: goTos.length,
+  };
+}
+
+// ── Food API ──────────────────────────────────
+
+export async function searchRestaurants(query: string): Promise<Restaurant[]> {
+  await randomDelay();
+  const lower = query.toLowerCase().trim();
+  if (!lower) return RESTAURANTS;
+  
+  return RESTAURANTS.filter(r => 
+    r.name.toLowerCase().includes(lower) || 
+    r.cuisines.some(c => c.toLowerCase().includes(lower)) ||
+    r.menu.some(m => m.name.toLowerCase().includes(lower))
+  );
+}
+
+export async function getRestaurantMenu(restaurantId: string): Promise<MenuItem[]> {
+  await delay(200);
+  const r = RESTAURANTS.find(x => x.id === restaurantId);
+  if (!r) throw new Error(`Restaurant ${restaurantId} not found`);
+  return r.menu;
+}
+
+export async function fetchFoodCoupons(restaurantId: string): Promise<Coupon[]> {
+  await delay(200);
+  return COUPONS[restaurantId] || [];
+}
+
+export async function applyFoodCoupon(couponCode: string, restaurantId: string): Promise<FoodCart> {
+  await delay(300);
+  const state = getState();
+  const cart = state.foodCart;
+  if (!cart || cart.items.length === 0) {
+    throw new Error('Food cart is empty.');
+  }
+
+  const coupons = COUPONS[restaurantId] || [];
+  const coupon = coupons.find(c => c.code.toUpperCase() === couponCode.toUpperCase());
+  
+  if (!coupon) throw new Error('Invalid coupon code');
+  if (cart.subtotal < coupon.minOrderValue) {
+    throw new Error(`Cart value must be at least ₹${coupon.minOrderValue} to apply this coupon`);
+  }
+
+  cart.discount = coupon.discountAmount;
+  cart.appliedCoupon = coupon.code;
+  cart.total = cart.subtotal - cart.discount;
+
+  saveState(state);
+  return cart;
 }

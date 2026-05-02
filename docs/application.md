@@ -44,7 +44,8 @@ Developers lose an average of **23 minutes** to regain deep focus after a contex
 
 ### AI-Powered Features
 - [x] **Natural language ordering**: `tenmin ask "something spicy under 300 for lunch"` → AI agent searches restaurants, filters by preferences, picks the best option, confirms with you, places order
-- [ ] **Smart suggestions**: Based on time of day, past orders, and weather
+- [ ] **Auto-Coupons**: Automatically calls `fetch_food_coupons` and `apply_food_coupon` to ensure developers get the best price without hunting for promo codes.
+- [ ] **Smart Suggestions (Instamart)**: Leverages the `your_go_to_items` endpoint to provide zero-shot personalized grocery recommendations (Red Bull, coffee, snacks).
 - [ ] **Dietary filtering**: Respects your calorie/macro preferences automatically
 - [x] **Budget awareness**: View your spending summary and trends via `tenmin budget`
 
@@ -220,7 +221,7 @@ sequenceDiagram
 ### Why Swiggy Will Love This
 
 1. **It's literally on their suggestion list**: They suggest "Conversational AI that handles end-to-end food ordering via natural language" — that's exactly what Tenmin is.
-2. **CLI Tool is an explicit integration type**: They specifically list CLI Tool as a supported integration type. Most applicants will build web apps. You're building for a niche they want filled.
+2. **"Coding Agents" Focus**: The Swiggy docs explicitly highlight plugging into "Claude Code, Cursor, Windsurf". Tenmin takes this a step further by being a dedicated CLI experience built specifically for this ecosystem.
 3. **Developer-to-developer story**: Swiggy's engineering team will personally relate to "I don't want to pick up my phone while coding." This is a product *they* would use.
 4. **MCP-native architecture**: By also exposing Tenmin as an MCP server (not just consuming MCP), you show deep platform understanding.
 5. **The name "Tenmin"**: Implies speed — order in under a minute, delivered in ten. Simple, memorable, perfectly branded.

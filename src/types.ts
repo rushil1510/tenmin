@@ -45,6 +45,7 @@ export interface OrderResult {
 
 export interface AppState {
   cart: CartItem[];
+  foodCart: FoodCart | null;
   credits: number;
   orders: OrderRecord[];
   address: string;
@@ -70,4 +71,49 @@ export interface UserPreferences {
   dietary: string[];   // e.g. ["vegetarian", "no dairy"]
   avoid: string[];     // e.g. ["energy drinks", "spicy"]
   defaultBudget: number;
+}
+
+// ── Food API Types ────────────────────────────
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  isVeg: boolean;
+  category: string;
+}
+
+export interface Restaurant {
+  id: string;
+  name: string;
+  cuisines: string[];
+  rating: number;
+  distanceKm: number;
+  deliveryTime: string;
+  costForTwo: number;
+  availabilityStatus: 'OPEN' | 'CLOSED' | 'UNAVAILABLE';
+  menu: MenuItem[];
+}
+
+export interface Coupon {
+  code: string;
+  description: string;
+  discountAmount: number;
+  minOrderValue: number;
+  validForCod: boolean;
+}
+
+export interface FoodCartItem {
+  menuItem: MenuItem;
+  qty: number;
+}
+
+export interface FoodCart {
+  restaurantId: string | null;
+  items: FoodCartItem[];
+  subtotal: number;
+  discount: number;
+  appliedCoupon: string | null;
+  total: number;
 }

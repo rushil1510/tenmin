@@ -8,7 +8,7 @@ vi.mock('node:os', () => ({
 
 const mockHomedir = '/tmp/tenmin-test-home-api';
 
-import { searchProducts, addToCart, getCart, removeFromCart, clearCart, checkout, getCredits } from './swiggy-api.js';
+import { searchProducts, addToCart, getCart, removeFromCart, clearCart, checkout, getCredits, searchRestaurants, getRestaurantMenu, fetchFoodCoupons, applyFoodCoupon, yourGoToItems } from './swiggy-api.js';
 import { resetState } from '../store/index.js';
 
 describe('Swiggy API Mock', () => {
@@ -113,6 +113,40 @@ describe('Swiggy API Mock', () => {
       await addToCart(product.id, 100);
       
       await expect(checkout()).rejects.toThrow(/Insufficient credits/);
+    });
+  });
+
+  describe('Instamart: yourGoToItems', () => {
+    it('should return default go-to items', async () => {
+      const result = await yourGoToItems();
+      expect(result.products.length).toBeGreaterThan(0);
+      // We expect bev_009, dry_001, ess_001, snk_001
+      const ids = result.products.map(p => p.id);
+      expect(ids).toContain('bev_009');
+    });
+  });
+
+  describe('Food API', () => {
+    it('should search restaurants', async () => {
+      const all = await searchRestaurants('');
+      expect(all.length).toBeGreaterThan(0);
+      
+      const pizza = await searchRestaurants('pizza');
+      expect(pizza.length).toBeGreaterThan(0);
+      expect(pizza[0].name.toLowerCase()).toContain('pizza');
+    });
+
+    it('should get restaurant menu', async () => {
+      const rest = (await searchRestaurants(''))[0];
+      const menu = await getRestaurantMenu(rest.id);
+      expect(menu.length).toBeGreaterThan(0);
+      expect(menu[0].id).toBeDefined();
+    });
+
+    it('should fetch food coupons', async () => {
+      const rest = (await searchRestaurants(''))[0];
+      const coupons = await fetchFoodCoupons(rest.id);
+      expect(coupons).toBeDefined();
     });
   });
 });

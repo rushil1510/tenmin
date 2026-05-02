@@ -15,6 +15,7 @@ const STATE_FILE = join(TENMIN_DIR, 'state.json');
 
 const DEFAULT_STATE: AppState = {
   cart: [],
+  foodCart: null,
   credits: 500,
   orders: [],
   address: 'Home — Koramangala, Bangalore 560034',
@@ -47,6 +48,7 @@ export function getState(): AppState {
     // Ensure all fields exist (handle state file from older version)
     return {
       cart: parsed.cart ?? [],
+      foodCart: parsed.foodCart ?? null,
       credits: parsed.credits ?? DEFAULT_STATE.credits,
       orders: parsed.orders ?? [],
       address: parsed.address ?? DEFAULT_STATE.address,
