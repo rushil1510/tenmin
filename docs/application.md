@@ -159,41 +159,51 @@ sequenceDiagram
 ## 5. Execution Checklist
 
 ### Phase 0: Application (Do This NOW)
-- [ ] Fill out the Google Form with answers from Section 3 above
-- [ ] Create the `tenmin` GitHub repo (public)
-- [ ] Add a killer README.md with the vision, architecture diagram, and "coming soon" roadmap
-- [ ] Set up the project structure (Node.js + TypeScript)
-- [ ] Push initial scaffolding so the repo isn't empty when they review
+- [x] Fill out the Google Form with answers from Section 3 above
+- [x] Create the `tenmin` GitHub repo (public)
+- [x] Add a killer README.md with the vision, architecture diagram, and "coming soon" roadmap
+- [x] Set up the project structure (Node.js + TypeScript)
+- [x] Push initial scaffolding so the repo isn't empty when they review
 
 ### Phase 1: Pre-Access MVP Shell (Before API Keys Arrive)
-- [ ] **CLI Framework**: Set up Commander.js with all command stubs (`order`, `quick`, `instamart`, `track`, `history`, `preferences`)
-- [ ] **Terminal UI**: Build rich terminal interface with Ink (React for CLI)
-  - [ ] Interactive restaurant selection
-  - [ ] Menu browsing with category navigation
-  - [ ] Order confirmation screen with item details + price
-  - [ ] Delivery tracking status display
-  - [ ] Spinners, colors, and beautiful ASCII art branding
-- [ ] **AI Agent scaffolding**: Set up LangChain.js agent with mock tools
-  - [ ] Natural language intent parsing
-  - [ ] ReAct agent loop architecture
-  - [ ] Tool definitions matching expected MCP schema
+- [x] **CLI Framework**: Set up Commander.js with all command stubs (`order`, `ask`, `copilot`, `track`, `history`, `list`, `budget`, `theme`, `prefs`)
+- [x] **Terminal UI**: Build rich terminal interface with chalk + ora
+  - [x] Interactive product/restaurant selection
+  - [x] Order confirmation screen with item details + price
+  - [x] Delivery tracking status display with progress bar
+  - [x] Spinners, colors, and 5 switchable themes
+- [x] **AI Agent scaffolding**: Set up Gemini intent parser with mock tools
+  - [x] Natural language intent parsing (`tenmin ask`)
+  - [x] Two-stage Gemini flow: intent → bundle curation
+  - [x] Context-aware ordering (history, time, prefs)
+- [x] **Local storage**: JSON file store for preferences, favorites, order history
 - [ ] **Auth flow skeleton**: OAuth 2.0 PKCE flow with local callback server
-- [ ] **Local storage**: SQLite setup for preferences, favorites, order history
 - [ ] **Demo video**: Record a demo with mock data showing the full UX flow
 - [ ] **Send the demo to builders@swiggy.in** with subject "Tenmin — CLI food ordering for developers"
 
+### Phase 1.5: LangChain ReAct Agent (Autonomous Ordering) ✅
+- [x] **Mock Food API**: searchRestaurants, getRestaurantMenu, addFoodToCart, placeFoodOrder
+- [x] **Mock Coupon API**: fetchFoodCoupons, applyFoodCoupon
+- [x] **Mock Instamart extras**: yourGoToItems endpoint
+- [x] **LangChain Tool Definitions**: 10 tools with zod schemas covering Food + Instamart
+- [x] **LangGraph ReAct Agent**: Multi-turn reasoning loop (search → menu → coupon → cart)
+- [x] **`tenmin copilot` command**: End-to-end agent invocation from CLI
+- [x] **47 unit tests passing**: Full coverage of mock API layer
+
 ### Phase 2: MCP Integration (Once API Access Granted)
 - [ ] **MCP Client integration**: Connect to Swiggy Food MCP server
-  - [ ] Implement `search_restaurants` tool
-  - [ ] Implement `get_menu` / `browse_menu` tool
-  - [ ] Implement `add_to_cart` / `manage_cart` tools
-  - [ ] Implement `place_order` / `checkout` tool
-  - [ ] Implement `track_order` tool
+  - [ ] Swap mock `searchRestaurants` → real `search_restaurants` tool
+  - [ ] Swap mock `getRestaurantMenu` → real `get_restaurant_menu` tool
+  - [ ] Swap mock `addFoodToCart` → real `update_food_cart` tool
+  - [ ] Swap mock `fetchFoodCoupons` → real `fetch_food_coupons` tool
+  - [ ] Swap mock `applyFoodCoupon` → real `apply_food_coupon` tool
+  - [ ] Swap mock `placeFoodOrder` → real `place_food_order` tool
 - [ ] **MCP Client integration**: Connect to Swiggy Instamart MCP server
-  - [ ] Implement `search_products` tool
-  - [ ] Implement `add_to_cart` tool
-  - [ ] Implement `checkout` tool
-- [ ] **Real auth flow**: Complete OAuth integration with Swiggy's auth system
+  - [ ] Swap mock `searchProducts` → real `search_products` tool
+  - [ ] Swap mock `yourGoToItems` → real `your_go_to_items` tool
+  - [ ] Swap mock `addToCart` → real `update_cart` tool
+  - [ ] Swap mock `checkout` → real `checkout` tool
+- [ ] **Real auth flow**: Complete OAuth 2.1 PKCE integration with Swiggy's auth system
 - [ ] **Error handling**: Graceful failures, retry logic, rate limit awareness
 - [ ] **End-to-end test**: Place a real order through the CLI
 

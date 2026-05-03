@@ -17,6 +17,7 @@ import { trackCommand } from './commands/track.js';
 import { listCommand } from './commands/list.js';
 import { budgetCommand } from './commands/budget.js';
 import { askCommand } from './commands/ask.js';
+import { copilotCommand } from './commands/copilot.js';
 import { themeCommand } from './commands/theme.js';
 import { prefsCommand } from './commands/prefs.js';
 
@@ -113,6 +114,15 @@ program
   .argument('<query...>', 'what you want, in plain English (e.g. "ingredients for biryani")')
   .action(async (queryParts: string[]) => {
     await askCommand(queryParts.join(' '));
+  });
+
+// ── tenmin copilot <query> ────────────────────
+program
+  .command('copilot')
+  .description('Multi-turn food & grocery AI agent — powered by LangChain')
+  .argument('<query...>', 'what you want (e.g. "order me a pepperoni pizza under 500")')
+  .action(async (queryParts: string[]) => {
+    await copilotCommand(queryParts.join(' '));
   });
 
 // ── tenmin theme [name] ──────────────────────

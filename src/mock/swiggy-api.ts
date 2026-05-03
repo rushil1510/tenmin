@@ -342,3 +342,75 @@ export async function applyFoodCoupon(couponCode: string, restaurantId: string):
   saveState(state);
   return cart;
 }
+
+export async function addFoodToCart(restaurantId: string, menuItemId: string, quantity: number): Promise<FoodCart> {
+  await delay(200);
+  const state = getState();
+  const rest = RESTAURANTS.find(r => r.id === restaurantId);
+  if (!rest) throw new Error(`Restaurant ${restaurantId} not found`);
+  
+  const item = rest.menu.find(m => m.id === menuItemId);
+  if (!item) throw new Error(`Menu item ${menuItemId} not found`);
+
+  if (!state.foodCart) {
+    state.foodCart = { restaurantId, items: [], subtotal: 0, discount: 0, appliedCoupon: null, total: 0 };
+  } else if (state.foodCart.restaurantId !== restaurantId) {
+    // Clear cart if switching restaurants
+    state.foodCart = { restaurantId, items: [], subtotal: 0, discount: 0, appliedCoupon: null, total: 0 };
+  }
+
+  const existingItem = state.foodCart.items.find(i => i.menuItem.id === menuItemId);
+  if (existingItem) {
+    existingItem.qty += quantity;
+  } else {
+    state.foodCart.items.push({ menuItem: item, qty: quantity });
+  }
+
+  state.foodCart.subtotal += item.price * quantity;
+  state.foodCart.total = state.foodCart.subtotal - state.foodCart.discount;
+  
+  saveState(state);
+  return state.foodCart;
+}
+
+export async function placeFoodOrder(): Promise<OrderResult> {
+  await randomDelay();
+  const state = getState();
+  const cart = state.foodCart;
+  
+  if (!cart || cart.items.length === 0) {
+    throw new Error('Food cart is empty.');
+  }
+
+  const deliveryFee = 40;
+  const grandTotal = cart.total + deliveryFee;
+
+  if (state.credits < grandTotal) {
+    throw new Error(`Insufficient credits. Need ₹${grandTotal} but only ₹${state.credits} available.`);
+  }
+
+  state.credits -= grandTotal;
+  const orderId = `TM-FOOD-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  state.orders.push({
+    orderId,
+    items: cart.items.map(i => ({ id: i.menuItem.id, name: i.menuItem.name, qty: i.qty, price: i.menuItem.price })),
+    total: grandTotal,
+    timestamp: new Date().toISOString(),
+  });
+
+  const result: OrderResult = {
+    orderId,
+    items: cart.items.map(i => ({ product: { ...i.menuItem, brand: '', mrp: i.menuItem.price, unit: 'portion', inStock: true, storeId: cart.restaurantId!, storeName: '', deliveryTime: '' }, qty: i.qty })),
+    subtotal: cart.subtotal,
+    deliveryFee,
+    total: grandTotal,
+    estimatedDelivery: '30 min',
+    creditsRemaining: state.credits,
+  };
+
+  state.foodCart = null;
+  saveState(state);
+  
+  return result;
+}
