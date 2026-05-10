@@ -1,12 +1,14 @@
 // Tenmin — LangChain Agent Tools Tests
-// Covers: all 10 tools in src/agent/tools.ts
+// Covers: all 11 tools in src/agent/tools.ts
 // The underlying API functions are mocked so tests run
 // instantly without real network calls or delays.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { SearchResult } from '../types.js';
 
 // ── Mock the entire swiggy-api module ─────────────────────────
 vi.mock('../mock/swiggy-api.js', () => ({
+  getAddresses: vi.fn(),
   searchRestaurants: vi.fn(),
   getRestaurantMenu: vi.fn(),
   fetchFoodCoupons: vi.fn(),
@@ -20,6 +22,7 @@ vi.mock('../mock/swiggy-api.js', () => ({
 }));
 
 import {
+  getAddressesTool,
   searchRestaurantsTool,
   getRestaurantMenuTool,
   fetchFoodCouponsTool,
@@ -34,6 +37,7 @@ import {
 } from './tools.js';
 
 import {
+  getAddresses,
   searchRestaurants,
   getRestaurantMenu,
   fetchFoodCoupons,
@@ -47,6 +51,7 @@ import {
 } from '../mock/swiggy-api.js';
 
 // typed mock helpers
+const mockGetAddresses = vi.mocked(getAddresses);
 const mockSearchRestaurants = vi.mocked(searchRestaurants);
 const mockGetMenu = vi.mocked(getRestaurantMenu);
 const mockFetchCoupons = vi.mocked(fetchFoodCoupons);
@@ -59,8 +64,8 @@ const mockCheckout = vi.mocked(checkout);
 const mockGoToItems = vi.mocked(yourGoToItems);
 
 describe('allTools export', () => {
-  it('contains exactly 10 tools', () => {
-    expect(allTools).toHaveLength(10);
+  it('contains exactly 11 tools', () => {
+    expect(allTools).toHaveLength(11);
   });
 
   it('every tool has a non-empty name and description', () => {
@@ -68,6 +73,28 @@ describe('allTools export', () => {
       expect((t as any).name.length).toBeGreaterThan(0);
       expect((t as any).description.length).toBeGreaterThan(0);
     }
+  });
+});
+
+// ── Address tool ──────────────────────────────────────────────
+
+describe('getAddressesTool', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns JSON-stringified addresses on success', async () => {
+    const addresses = [{ id: 'addr_001', label: 'Home', displayText: 'Koramangala, Bangalore' }];
+    mockGetAddresses.mockResolvedValue(addresses as any);
+
+    const result = await getAddressesTool.invoke({});
+    expect(result).toBe(JSON.stringify(addresses));
+    expect(mockGetAddresses).toHaveBeenCalled();
+  });
+
+  it('returns an error string when addresses cannot be fetched', async () => {
+    mockGetAddresses.mockRejectedValue(new Error('Auth token expired'));
+
+    const result = await getAddressesTool.invoke({});
+    expect(result).toMatch(/Error: Auth token expired/);
   });
 });
 
@@ -216,11 +243,16 @@ describe('searchProductsTool', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns JSON-stringified products on success', async () => {
-    const products = [{ id: 'bev_001', name: 'Diet Coke' }];
-    mockSearchProducts.mockResolvedValue({ products, query: 'coke', totalResults: 1 });
+    // Cast as SearchResult so the stub satisfies the typed mock signature
+    const mockResult: SearchResult = {
+      products: [] as any,
+      query: 'coke',
+      totalResults: 1,
+    };
+    mockSearchProducts.mockResolvedValue(mockResult);
 
     const result = await searchProductsTool.invoke({ query: 'coke' });
-    expect(result).toBe(JSON.stringify(products));
+    expect(result).toBe(JSON.stringify(mockResult.products));
     expect(mockSearchProducts).toHaveBeenCalledWith('coke');
   });
 
@@ -236,11 +268,15 @@ describe('yourGoToItemsTool', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns JSON-stringified go-to products on success', async () => {
-    const products = [{ id: 'bev_009', name: 'Red Bull' }];
-    mockGoToItems.mockResolvedValue({ products, query: '', totalResults: 1 });
+    const mockResult: SearchResult = {
+      products: [] as any,
+      query: '',
+      totalResults: 1,
+    };
+    mockGoToItems.mockResolvedValue(mockResult);
 
     const result = await yourGoToItemsTool.invoke({});
-    expect(result).toBe(JSON.stringify(products));
+    expect(result).toBe(JSON.stringify(mockResult.products));
     expect(mockGoToItems).toHaveBeenCalled();
   });
 

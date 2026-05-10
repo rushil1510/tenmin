@@ -27,6 +27,30 @@ function generateOrderId(): string {
   return `TM-${y}-${seq}`;
 }
 
+// ── Get Addresses ─────────────────────────────
+// Simulates: Swiggy MCP → get_addresses (shared by Food + Instamart)
+// The real MCP flow MUST start here. Returns saved delivery addresses.
+// In production this is user-specific; the mock returns the address in state.
+
+export interface SavedAddress {
+  id: string;
+  label: string;
+  displayText: string;
+}
+
+export async function getAddresses(): Promise<SavedAddress[]> {
+  await randomDelay();
+  const state = getState();
+  // Map the state's freeform address string into the MCP shape
+  return [
+    {
+      id: 'addr_default',
+      label: 'Home',
+      displayText: state.address,
+    },
+  ];
+}
+
 // ── Search Products ───────────────────────────
 // Simulates: Swiggy Instamart MCP → search_products
 

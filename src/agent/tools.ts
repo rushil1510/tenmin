@@ -1,6 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
+  getAddresses,
   searchRestaurants,
   getRestaurantMenu,
   fetchFoodCoupons,
@@ -13,7 +14,34 @@ import {
   yourGoToItems,
 } from '../mock/swiggy-api.js';
 
-// ── Food API Tools ───────────────────────────────────────────
+// ── Constants ───────────────────────────────────────
+
+// Swiggy Builders Club v1 imposes a hard ₹1000 cap on food orders
+const FOOD_ORDER_CAP = 1000;
+
+// ── Address Tool (Step 0 of every real MCP flow) ──────────────
+// The real MCP flow starts with get_addresses. All search_restaurants
+// and search_products calls require an addressId from this tool.
+
+export const getAddressesTool = tool(
+  async () => {
+    try {
+      const addresses = await getAddresses();
+      return JSON.stringify(addresses);
+    } catch (e: any) {
+      return `Error: ${e.message}`;
+    }
+  },
+  {
+    name: 'getAddresses',
+    description:
+      'Fetch the user\'s saved delivery addresses. ALWAYS call this first before searching ' +
+      'restaurants or products. Use the returned addressId with subsequent search calls.',
+    schema: z.object({}),
+  }
+);
+
+// ── Food API Tools ───────────────────────────────────────
 
 export const searchRestaurantsTool = tool(
   async ({ query }) => {
@@ -111,15 +139,25 @@ export const addFoodToCartTool = tool(
 export const placeFoodOrderTool = tool(
   async () => {
     try {
+      // Swiggy Builders Club v1: hard ₹1000 cap — check before placing
+      const { getState } = await import('../store/index.js');
+      const state = getState();
+      if (state.foodCart && state.foodCart.total > FOOD_ORDER_CAP) {
+        return `Error: Cart total ₹${state.foodCart.total} exceeds the ₹${FOOD_ORDER_CAP} Builders Club cap. Please remove some items before placing the order.`;
+      }
+
       const result = await placeFoodOrder();
-      return `Order placed successfully! Order ID: ${result.orderId}. Total: ₹${result.total}. ETA: ${result.estimatedDelivery}`;
+      return `Order placed successfully (COD)! Order ID: ${result.orderId}. Total: ₹${result.total}. ETA: ${result.estimatedDelivery}`;
     } catch (e: any) {
       return `Error: ${e.message}`;
     }
   },
   {
     name: 'placeFoodOrder',
-    description: 'Place food delivery order and checkout. Only use this when the user explicitly confirms they want to place the order.',
+    description:
+      'Place food delivery order via Cash on Delivery (COD). ' +
+      'Only use this when the user EXPLICITLY confirms they want to place the order. ' +
+      'This is NOT idempotent — if it fails with a 5xx, check order history before retrying.',
     schema: z.object({}),
   }
 );
@@ -183,25 +221,32 @@ export const checkoutInstamartTool = tool(
   async () => {
     try {
       const result = await checkout();
-      return `Instamart Order placed successfully! Order ID: ${result.orderId}. Total: ₹${result.total}.`;
+      // Instamart v1 is also COD-only in Builders Club
+      return `Instamart order placed successfully (COD)! Order ID: ${result.orderId}. Total: ₹${result.total}.`;
     } catch (e: any) {
       return `Error: ${e.message}`;
     }
   },
   {
     name: 'checkoutInstamart',
-    description: 'Checkout the current Instamart grocery cart. Only use this when the user explicitly confirms.',
+    description:
+      'Checkout the current Instamart grocery cart via Cash on Delivery (COD). ' +
+      'Minimum cart value is ₹99. Only use this when the user explicitly confirms.',
     schema: z.object({}),
   }
 );
 
 export const allTools = [
+  // Step 0: always call this first to resolve the delivery address
+  getAddressesTool,
+  // Food API
   searchRestaurantsTool,
   getRestaurantMenuTool,
   fetchFoodCouponsTool,
   applyFoodCouponTool,
   addFoodToCartTool,
   placeFoodOrderTool,
+  // Instamart
   searchProductsTool,
   yourGoToItemsTool,
   addToInstamartCartTool,
