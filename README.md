@@ -41,6 +41,7 @@ Developers lose ~23 minutes of focus after each context switch ([UC Irvine resea
 | **Credit Balance** | `tenmin credits` | Check remaining credit balance |
 | **Order History** | `tenmin history` | View past orders with dates, items, and spend totals |
 | **UI Themes** | `tenmin theme` | Switch between 5 terminal color themes |
+| **Preferences** | `tenmin prefs` | View and edit dietary rules, avoid list, and default budget used by `tenmin ask` |
 
 ---
 
@@ -274,6 +275,7 @@ src/
 ├── types.ts              # Shared TypeScript interfaces (Instamart + Food)
 ├── agent/
 │   ├── tools.ts          # LangChain tool definitions (10 tools w/ zod schemas)
+│   ├── tools.test.ts     # Tests: all 10 tools, success + error paths
 │   └── executor.ts       # LangGraph ReAct agent orchestration
 ├── commands/
 │   ├── order.ts          # tenmin order — search + interactive add-to-cart
@@ -285,23 +287,35 @@ src/
 │   ├── history.ts        # tenmin history — past orders
 │   ├── reorder.ts        # tenmin reorder — re-add past order items
 │   ├── track.ts          # tenmin track — live order tracking
+│   ├── track.test.ts     # Tests: track command UX (keypress dismiss)
 │   ├── list.ts           # tenmin list — saved grocery lists
 │   ├── budget.ts         # tenmin budget — spending trends
+│   ├── budget.test.ts    # Tests: period filtering, sumOrders, topItems
 │   ├── theme.ts          # tenmin theme — switch UI theme
 │   └── prefs.ts          # tenmin prefs — edit dietary/budget preferences
 ├── lib/
 │   ├── gemini.ts         # Gemini Flash API — intent parsing + bundle curation
-│   └── context.ts        # Context builder (history, time, prefs)
+│   ├── context.ts        # Context builder (history, time, prefs)
+│   └── context.test.ts   # Tests: buildContext shape, dedup, formatContextForPrompt
 ├── mock/
 │   ├── products.ts       # Mock Instamart product catalogue (150+ products)
 │   ├── restaurants.ts    # Mock Food restaurant catalogue (3 restaurants + menus + coupons)
-│   └── swiggy-api.ts     # Mock MCP API — will be swapped for real MCP client
+│   ├── swiggy-api.ts     # Mock MCP API — will be swapped for real MCP client
+│   ├── swiggy-api.test.ts # Tests: Instamart cart, checkout, search, Food API basics
+│   ├── food-api.test.ts  # Tests: addFoodToCart, applyFoodCoupon, placeFoodOrder
+│   └── track.test.ts     # Tests: getOrderStatus time-bucket state machine
 ├── store/
 │   ├── index.ts          # State management (cart, foodCart, credits, orders, theme)
-│   └── config.ts         # Config management (API keys)
+│   ├── index.test.ts     # Tests: state persistence, resetState, theme prefs
+│   ├── config.ts         # Config management (API keys)
+│   ├── config.test.ts    # Tests: Gemini key storage + env var precedence
+│   ├── preferences.ts    # User preferences (dietary, avoid, defaultBudget)
+│   ├── preferences.test.ts # Tests: prefs persistence, migration, error recovery
+│   └── lists.test.ts     # Tests: saved list CRUD + state migration
 └── ui/
     ├── format.ts         # Theme-aware terminal formatting functions
-    └── themes.ts         # 5 theme definitions (colors + icons)
+    ├── themes.ts         # 5 theme definitions (colors + icons)
+    └── themes.test.ts    # Tests: registry, getTheme, interface completeness
 ```
 
 ### Key Design Decisions
@@ -438,7 +452,7 @@ npm run dev -- history
 # Type check
 npm run lint
 
-# Run unit tests (47 tests)
+# Run unit tests (135 tests across 12 files)
 npm test
 
 # Build for production
@@ -455,8 +469,9 @@ All data is stored in `~/.tenmin/`:
 
 ```
 ~/.tenmin/
-├── state.json    # Cart, credits (₹500 default), order history, theme preference
-└── config.json   # Gemini API key
+├── state.json       # Cart, credits (₹500 default), foodCart, order history, theme preference, saved lists
+├── config.json      # Gemini API key
+└── preferences.json # Dietary rules, avoid list, default budget (used by `tenmin ask`)
 ```
 
 To reset everything: delete `~/.tenmin/` and start fresh.
